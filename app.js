@@ -4,6 +4,9 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mysql= require('mysql');
+var http = require('http');
+
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -21,9 +24,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+//Database connection
+app.use(function(req, res, next){
+	global.connection = mysql.createConnection({
+	  	host     : 'localhost',
+	  	user     : 'root',
+  		database : 'test'
+	});
+	connection.connect();
+	next();
+});
 app.use('/', index);
-app.use('/users', users);
+app.use('/api/v1/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -31,6 +43,8 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -44,3 +58,5 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+var server = http.createServer(app);
+server.listen(4001);
